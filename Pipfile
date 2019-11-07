@@ -9,6 +9,7 @@ pymongo = "*"
 logme = "*"
 python-decouple = "*"
 progressbar2 = "*"
+faker = "*"
 
 [dev-packages]
 black = "==19.10b0"
@@ -16,6 +17,7 @@ nox = "*"
 pytest = "*"
 flake8 = "*"
 testdata = "*"
+pytest-watch = "*"
 
 [requires]
 python_version = "3.7"
