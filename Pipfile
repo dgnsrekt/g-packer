@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+appdirs = "*"
+pymongo = "*"
+logme = "*"
+python-decouple = "*"
+progressbar2 = "*"
+
+[dev-packages]
+black = "==19.10b0"
+nox = "*"
+pytest = "*"
+flake8 = "*"
+testdata = "*"
+
+[requires]
+python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
