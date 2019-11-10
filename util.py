@@ -1,16 +1,24 @@
-import time
+from time import time, sleep
 
 
 def timeit(method):
     def timed(*args, **kw):
-        ts = time.time()
+        start = time()
         result = method(*args, **kw)
-        te = time.time()
-        if "log_time" in kw:
-            name = kw.get("log_name", method.__name__.upper())
-            kw["log_time"][name] = int((te - ts) * 1000)
-        else:
-            print("%r  %2.2f ms" % (method.__name__, (te - ts) * 1000))
+        end = time()
+        seconds = round(end - start)
+        print(f"\n{method.__name__} {seconds}s")
         return result
 
     return timed
+
+
+@timeit
+def main():
+    for _ in range(30):
+        sleep(0.1)
+        print(".", end="", flush=True)
+
+
+if __name__ == "__main__":
+    main()
