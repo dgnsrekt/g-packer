@@ -10,7 +10,8 @@ import logme
 
 from progressbar import progressbar
 
-MB = 1024 * 1024
+KILOBYTE = 1024
+MEGABYTE = KILOBYTE * 1024
 
 
 @logme.log(name="Fake-File-Generator")
@@ -30,7 +31,7 @@ class FakeFileGenerator:
     def random_file():
         return FakeFileGenerator.fake.file_name()
 
-    def _generate_files(self, directories=2, files=8):  # may get rid of self
+    def _generate_files(self, directories=2, files=2):  # may get rid of self
         self.root_directory.mkdir()
 
         for _ in range(directories):
@@ -49,7 +50,7 @@ class FakeFileGenerator:
                 self.logger.info(f"writing to file:\n{file_}")
                 for _ in progressbar(range(self.file_size)):
                     with open(file_, mode="ab") as write_file:
-                        write_file.write(getrandom(size=MB))
+                        write_file.write(getrandom(size=MEGABYTE))
 
     def _clean_up(self):
         self.logger.info(f"cleaning up {self.root_directory}")
