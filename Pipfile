@@ -10,6 +10,7 @@ logme = "*"
 python-decouple = "*"
 progressbar2 = "*"
 faker = "*"
+toml = "*"
 
 [dev-packages]
 black = "==19.10b0"
