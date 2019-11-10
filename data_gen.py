@@ -1,60 +1,82 @@
-from os import walk
+from os import walk, getrandom
+from shutil import rmtree as rmdir
 from pathlib import Path
 from faker import Faker
-from testdata import * 
-from environment import PRE_PROCESS_DATA 
+from contextlib import contextmanager
+from testdata import *
+from environment import PRE_PROCESS_DATA
+from time import sleep
+import logme
 
-get_name(name_count=2, as_str=True)
+from progressbar import progressbar
 
-FILE_SIZE = (1024 * 1024)
-
-while True:
-    break
-    print(fake.file_path())
-    print(fake.binary(length=MAX))
-    break
+MB = 1024 * 1024
 
 
-class FileGenerator:
+@logme.log(name="Fake-File-Generator")
+class FakeFileGenerator:
     fake = Faker()
 
-    def __init__(self, directory): # think about making this a config env var 
+    def __init__(self, directory, filesize):  # think about making this a config env var
         self.directory = Path(directory)
-        self.root_dir = self.directory / self.random_folder()
+        self.file_size = filesize
+        self.root_directory = self.directory / self.random_folder()
 
     @staticmethod
     def random_folder():
-        return FileGenerator.fake.file_name().split(".")[0]
+        return FakeFileGenerator.fake.file_name().split(".")[0]
 
     @staticmethod
     def random_file():
-        return FileGenerator.fake.file_name()
+        return FakeFileGenerator.fake.file_name()
 
-    def generate_files(self, dirs=2, files=4): # may get rid of self
-        self.root_dir.mkdir()
+    def _generate_files(self, directories=2, files=8):  # may get rid of self
+        self.root_directory.mkdir()
 
-        for _ in range(dirs):
-            _dir = self.root_dir / self.random_folder()
-            _dir.mkdir()
+        for _ in range(directories):
+            directory = self.root_directory / self.random_folder()
+            directory.mkdir()
 
             for _ in range(files):
-                _file = _dir / self.random_file()
-                _file.touch()
-                #print(_file, "created")
+                file_ = directory / self.random_file()
+                self.logger.debug(f"creating file{file_}")
+                file_.touch()
 
-    def generate_data(self, size=0):
-        for _dir, _sub, _files in walk(self.root_dir):
-            for _file in _files:
-                print(_dir, _file)
+    def _generate_data(self):
+        for directory, _, files in walk(self.root_directory):
+            for file_ in files:
+                file_ = Path(directory) / file_
+                self.logger.info(f"writing to file:\n{file_}")
+                for _ in progressbar(range(self.file_size)):
+                    with open(file_, mode="ab") as write_file:
+                        write_file.write(getrandom(size=MB))
 
-        
-        
+    def _clean_up(self):
+        self.logger.info(f"cleaning up {self.root_directory}")
+        rmdir(self.root_directory.parent.parent)
 
-fg = FileGenerator(PRE_PROCESS_DATA)
-fg.generate_files()
-fg.generate_data()
+    def generate(self):
+        self._generate_files()
+        self._generate_data()
+
+    @contextmanager
+    def manager(self):  # this needs to come out and go to the tester
+        # both the pre and post should close after running
+        self.generate()
+        try:
+            yield self.root_directory
+        finally:
+            self._clean_up()
 
 
+def main():
+    fg = FakeFileGenerator(PRE_PROCESS_DATA, 25)
+    with fg.manager() as working_directory:
+        for x, y, z in walk(working_directory):
+            print("procesing...")
+            print(x, y, z)
+            sleep(5)
 
 
-
+if __name__ == "__main__":
+    main()
