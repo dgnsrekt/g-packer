@@ -19,6 +19,7 @@ pytest = "*"
 flake8 = "*"
 testdata = "*"
 pytest-watch = "*"
+flake8-import-order = "*"
 
 [requires]
 python_version = "3.7"
