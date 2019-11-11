@@ -1,3 +1,5 @@
+# flake8: noqa
+
 import bson
 import logme
 from decouple import config

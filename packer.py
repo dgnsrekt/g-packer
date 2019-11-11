@@ -1,36 +1,33 @@
-from manifest import Manifest, FileManifest
-from static import ALLOWED_CHUNK_SIZES, KILOBYTE, MEGABYTE
-from abc import abstractmethod, ABCMeta
-from pathlib import Path
 from hashlib import sha256
+from pathlib import Path
 import zlib
+
+from manifest import Manifest, FileManifest
+from static import ALLOWED_CHUNK_SIZES
+
 import bson
-
-
-multi_target = "stuff"
-single_target = "stuff/something.ini"
 
 
 class Packer:
     version = None
 
     def hash():
-        raise NotImplemented
+        raise NotImplementedError
 
-    # def encrypt():
-    #    pass
+    #    def encrypt():
+    #        raise NotImplementedError
 
     def compress():
-        raise NotImplemented
+        raise NotImplementedError
 
     def collect_metadata():
-        raise NotImplemented
+        raise NotImplementedError
 
     def serialize(data):
-        raise NotImplemented
+        raise NotImplementedError
 
     def write():
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class UnPacker:
@@ -47,19 +44,19 @@ class UnPacker:
         return meta_data
 
     def decompress():
-        raise NotImplemented
+        raise NotImplementedError
 
     # def decrypt():
-    #     raise NotImplemented
+    # raise NotImplementedError
 
     def hash():
-        raise NotImplemented
+        raise NotImplementedError
 
     def check_hash():
-        raise NotImplemented
+        raise NotImplementedError
 
     def write():
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class V1_Packer(Packer):
@@ -124,9 +121,6 @@ class V1_UnPacker(UnPacker):
             return write_file.write(deserialized_data)
 
 
-from util import timeit
-
-
 class PackageMaster:
     versions = {1: V1_UnPacker}
 
@@ -135,7 +129,6 @@ class PackageMaster:
         assert processor is not None  # TODO: Add proper error.
         return processor
 
-    @timeit
     def unpack(target_package: str):
         with open(target_package, mode="rb") as read_file:
             for deserialized_data in bson.decode_file_iter(read_file):
@@ -157,7 +150,6 @@ class PackageMaster:
                 processor.write(payload, file_name)  # TODO: need to add file destination
                 print(".", end="", flush=True)
 
-    @timeit
     def pack(manifest: FileManifest, chunk_len: int, processor: Packer, destination: str):
 
         assert chunk_len in ALLOWED_CHUNK_SIZES
@@ -205,14 +197,16 @@ class PackageMaster:
                     # break  # TODO: DONT FORGET TO REMOVE
 
 
-from time import sleep
+def protoype_code():
+    multi_target = "stuff"
+    from time import sleep
 
-p = Path("package.dat")
-p.unlink()
+    p = Path("package.dat")
+    p.unlink()
 
-process = V1_Packer
-chunk_size = 1024 * 1024
-current = Manifest.make(multi_target)
-PackageMaster.pack(current, chunk_size, process, "package.dat")
-sleep(5)
-PackageMaster.unpack("package.dat")
+    process = V1_Packer
+    chunk_size = 1024 * 1024
+    current = Manifest.make(multi_target)
+    PackageMaster.pack(current, chunk_size, process, "package.dat")
+    sleep(5)
+    PackageMaster.unpack("package.dat")

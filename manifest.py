@@ -2,7 +2,7 @@ from pathlib import Path
 from hashlib import sha256
 from os import walk
 from math import ceil
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta
 from datetime import datetime
 
 from static import KILOBYTE, MEGABYTE
