@@ -3,7 +3,6 @@ from shutil import rmtree as rmdir
 from pathlib import Path
 from faker import Faker
 from contextlib import contextmanager
-from testdata import *
 from environment import PRE_PROCESS_DATA
 from time import sleep
 import logme
@@ -76,7 +75,7 @@ def main():
         for x, y, z in walk(working_directory):
             print("procesing...")
             print(x, y, z)
-            sleep(5)
+            sleep(1)
 
 
 if __name__ == "__main__":
