@@ -127,11 +127,11 @@ class V1_UnPacker(UnPacker):
 from util import timeit
 
 
-class PackageManager:
+class PackageMaster:
     versions = {1: V1_UnPacker}
 
     def get_unpacker(version):
-        processor = PackageManager.versions.get(version, None)
+        processor = PackageMaster.versions.get(version, None)
         assert processor is not None  # TODO: Add proper error.
         return processor
 
@@ -142,7 +142,7 @@ class PackageManager:
                 meta_data = UnPacker.read_metadata(deserialized_data)
                 payload = deserialized_data.pop("payload")
                 version = meta_data["version"]
-                processor = PackageManager.get_unpacker(version)
+                processor = PackageMaster.get_unpacker(version)
 
                 # print(meta_data)
                 # print(version)
@@ -213,6 +213,6 @@ p.unlink()
 process = V1_Packer
 chunk_size = 1024 * 1024
 current = Manifest.make(multi_target)
-PackageManager.pack(current, chunk_size, process, "package.dat")
+PackageMaster.pack(current, chunk_size, process, "package.dat")
 sleep(5)
-PackageManager.unpack("package.dat")
+PackageMaster.unpack("package.dat")
