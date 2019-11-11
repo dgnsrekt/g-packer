@@ -53,7 +53,7 @@ class FakeFileGenerator:
 
     def _clean_up(self):
         self.logger.info(f"cleaning up {self.root_directory}")
-        rmdir(self.root_directory.parent.parent)
+        rmdir(self.root_directory.parent.parent)  # TODO: make this better
 
     def generate(self):
         self._generate_files()
