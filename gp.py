@@ -159,24 +159,24 @@ def unpack(directory_path: Path):
                 write_file.write(data)
 
 
-try:
-    PACKAGE_DAT_PATH.unlink()
-    MANIFEST_PATH.unlink()
-except:
-    pass
+def main():
+    try:
+        PACKAGE_DAT_PATH.unlink()
+        MANIFEST_PATH.unlink()
+    except:
+        pass
 
+    from time import sleep
 
-from time import sleep
+    FILE_SIZE = 1024
+    fake_maker = FakeFileGenerator(PRE_PROCESS_DATA, FILE_SIZE)
 
-FILE_SIZE = 1024
-fake_maker = FakeFileGenerator(PRE_PROCESS_DATA, FILE_SIZE)
+    with fake_maker.manager() as FFG:
 
-with fake_maker.manager() as FFG:
+        WORKING_DIRECTORY = list(PRE_PROCESS_DATA.glob("*"))[0]
 
-    WORKING_DIRECTORY = list(PRE_PROCESS_DATA.glob("*"))[0]
+        logger.info(f"WORKING DIRECTORY:\n{WORKING_DIRECTORY}")
+        logger.info(f"BUFFER SIZE:{MAX_BUFFER_SIZE}\n")
 
-    logger.info(f"WORKING DIRECTORY:\n{WORKING_DIRECTORY}")
-    logger.info(f"BUFFER SIZE:{MAX_BUFFER_SIZE}\n")
-
-    pack(WORKING_DIRECTORY)
-    unpack(PACKAGE_DAT_PATH)
+        pack(WORKING_DIRECTORY)
+        unpack(PACKAGE_DAT_PATH)
