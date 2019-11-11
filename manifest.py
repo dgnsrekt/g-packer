@@ -5,9 +5,9 @@ from math import ceil
 from abc import abstractmethod, ABCMeta
 from datetime import datetime
 
-import toml
+from static import KILOBYTE, MEGABYTE
 
-MB = 1024 * 1024
+import toml
 
 
 class PackagePath:
@@ -15,14 +15,14 @@ class PackagePath:
         self.path = Path(path)
 
     def sha256sum(self) -> str:
-        _hash = sha256()
-        _bytes = bytearray(128 * 1024)
-        mv = memoryview(_bytes)
+        hash_ = sha256()
+        bytes_ = bytearray(128 * KILOBYTE)
+        mv = memoryview(bytes_)
 
         with open(self.path, "rb", buffering=0) as read_file:
             for n in iter(lambda: read_file.readinto(mv), 0):
-                _hash.update(mv[:n])
-        return _hash.hexdigest()
+                hash_.update(mv[:n])
+        return hash_.hexdigest()
 
     def exists(self):
         return self.path.exists()
@@ -47,7 +47,7 @@ class PackagePath:
 class FileManifest(metaclass=ABCMeta):
     def __init__(self, target_path: str, *args, **kwargs):
         self.path = PackagePath(target_path)
-        self.chunk_size = kwargs.get("chunk_size", MB)
+        self.chunk_size = kwargs.get("chunk_size", MEGABYTE)
         self.top_directory = None
 
         # Optional Stuff
@@ -58,6 +58,10 @@ class FileManifest(metaclass=ABCMeta):
         self.extras["created_by"] = kwargs.get("created_by", None)
 
         self.extras = {k: v for k, v in self.extras.items() if v is not None}
+
+    def verify(self):
+        for file_ in self:
+            assert file_.exists()  # TODO: Change to if execption
 
     def __repr__(self):
         return "\n".join([f"{key} : {value}" for key, value in self.__dict__.items()])
@@ -107,7 +111,9 @@ class Manifest:
         if path.is_file():
             return SingleFileManifest(target_path, *args, **kwargs)
 
-    def create(manifest: FileManifest, destination: str, chunk_size=MB):
+    def create(manifest: FileManifest, destination: str, chunk_size=MEGABYTE):
+
+        manifest.verify()
 
         header = dict()
         file_list = []
@@ -121,7 +127,6 @@ class Manifest:
             header["top_directory"] = manifest.top_directory
 
         for file_ in manifest:
-            assert file_.exists()
 
             manifest = dict()
             manifest["name"] = file_.name
@@ -182,5 +187,4 @@ def main():
     print(x)
     print(x.sha256sum())
     print(len(x))
-    MB = 1024
-    print(x.chunks_length(chunk_size=MB))
+    print(x.chunks_length(chunk_size=MEGABYTE))
