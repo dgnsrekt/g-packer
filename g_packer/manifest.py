@@ -1,13 +1,13 @@
-from pathlib import Path
-from hashlib import sha256
-from os import walk
-from math import ceil
 from abc import ABCMeta
 from datetime import datetime
-
-from static import KILOBYTE, MEGABYTE
+from hashlib import sha256
+from math import ceil
+from os import walk
+from pathlib import Path
 
 import toml
+
+from .static import KILOBYTE, MEGABYTE
 
 
 class PackagePath:
@@ -39,9 +39,6 @@ class PackagePath:
 
     def __str__(self):
         return self.name
-
-    def __repr__(self):
-        return "\n".join([f"{key} : {value}" for key, value in self.__dict__.items()])
 
 
 class FileManifest(metaclass=ABCMeta):
