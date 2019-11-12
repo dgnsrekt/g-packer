@@ -1,13 +1,17 @@
-from os import walk, getrandom
-from shutil import rmtree as rmdir
-from pathlib import Path
-from faker import Faker
+# flake8: noqa
 from contextlib import contextmanager
-from environment import PRE_PROCESS_DATA
+from os import getrandom, walk
+from pathlib import Path
+from shutil import rmtree as rmdir
 from time import sleep
+
+from faker import Faker
+
 import logme
 
 from progressbar import progressbar
+
+from .environment import PRE_PROCESS_DATA
 
 KILOBYTE = 1024
 MEGABYTE = KILOBYTE * 1024
@@ -62,8 +66,8 @@ class FakeFileGenerator:
     @contextmanager
     def manager(self):  # this needs to come out and go to the tester
         # both the pre and post should close after running
-        self.generate()
         try:
+            self.generate()
             yield self.root_directory
         finally:
             self._clean_up()
