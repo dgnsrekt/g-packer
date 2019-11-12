@@ -84,6 +84,13 @@ class MultipleFileManifest(FileManifest):
         return iter(self.path_list)
 
 
+# IDEA Custom Multi File Manifest Class
+# Initailly builds a customily named top directory and makes it.
+# Then it finds all choosen files and creates symlinks to the choosen files in the
+# custom named directory.
+# uses os.walk followlinks=True options to walk symbolic links that resolve to dirs.
+
+
 class SingleFileManifest(FileManifest):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
