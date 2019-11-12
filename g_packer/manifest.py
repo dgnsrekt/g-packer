@@ -15,20 +15,20 @@ class PackagePath:
         self.path = Path(path)
 
     def sha256sum(self) -> str:
-        hash_ = sha256()
-        bytes_ = bytearray(128 * KILOBYTE)
-        mv = memoryview(bytes_)
+        hash_algo = sha256()
+        buffer = bytearray(128 * KILOBYTE)
+        buffer = memoryview(buffer)
 
         with open(self.path, "rb", buffering=0) as read_file:
-            for n in iter(lambda: read_file.readinto(mv), 0):
-                hash_.update(mv[:n])
-        return hash_.hexdigest()
+            for chunk in iter(lambda: read_file.readinto(buffer), 0):
+                hash_algo.update(buffer[:chunk])
+        return hash_algo.hexdigest()
 
     def exists(self):
         return self.path.exists()
 
-    def chunk_len(self, chunk_size: int):
-        return ceil(len(self) / chunk_size)
+    def chunk_len(self, chunk_buffer_size: int):
+        return ceil(len(self) / chunk_buffer_size)
 
     @property
     def name(self):
@@ -42,9 +42,9 @@ class PackagePath:
 
 
 class FileManifest(metaclass=ABCMeta):
-    def __init__(self, target_path: str, *args, **kwargs):
+    def __init__(self, target_path: str, chunk_buffer_size: int, *args, **kwargs):
         self.path = PackagePath(target_path)
-        self.chunk_size = kwargs.get("chunk_size", MEGABYTE)
+        self.chunk_buffer_size = chunk_buffer_size
         self.top_directory = None
 
         # Optional Stuff
@@ -96,19 +96,19 @@ class SingleFileManifest(FileManifest):
         return iter([self.path])
 
 
-class Manifest:
-    def make(target_path: str, *args, **kwargs):
+class ManifestMaker:
+    def create(target_path: str, chunk_buffer_size: int, *args, **kwargs):
         path = Path(target_path)
 
         assert path.exists()  # TODO: Change if exception
 
         if path.is_dir():
-            return MultipleFileManifest(target_path, *args, **kwargs)
+            return MultipleFileManifest(target_path, chunk_buffer_size, *args, **kwargs)
 
         if path.is_file():
-            return SingleFileManifest(target_path, *args, **kwargs)
+            return SingleFileManifest(target_path, chunk_buffer_size, *args, **kwargs)
 
-    def create(manifest: FileManifest, destination: str, chunk_size=MEGABYTE):
+    def write(manifest: FileManifest, destination: str, chunk_buffer_size: int):
 
         manifest.verify()
 
@@ -118,22 +118,22 @@ class Manifest:
         master_hash = ""
 
         header.update(manifest.extras)
-        header["chunk_size"] = chunk_size
+        header["chunk_buffer_size"] = chunk_buffer_size
 
         if manifest.top_directory:
             header["top_directory"] = manifest.top_directory
 
-        for file_ in manifest:
+        for current_file in manifest:
 
             manifest = dict()
-            manifest["name"] = file_.name
-            manifest["path"] = str(file_.path)
+            manifest["name"] = current_file.name
+            manifest["path"] = str(current_file.path)
 
-            _hash = file_.sha256sum()
-            master_hash += _hash
+            file_hash = current_file.sha256sum()
+            master_hash += file_hash
 
-            manifest["hash"] = _hash
-            manifest["chunks"] = file_.chunk_len(chunk_size)
+            manifest["hash"] = file_hash
+            manifest["chunks"] = current_file.chunk_len(chunk_buffer_size)
 
             file_list.append(manifest)
 

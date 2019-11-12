@@ -1,24 +1,27 @@
 from pathlib import Path
 
-from g_packer.packer import PackageMaster, V1_Packer
-from g_packer.manifest import FileManifest, Manifest
+from g_packer.packer import PackageMaster, VersionOnePacker
+from g_packer.manifest import FileManifest, ManifestMaker
 
 
 def protoype_code():
 
-    multi_target = "stuff"
-    from time import sleep
+    target_folder = "stuff/movie.mkv"
+    # target_folder = "stuff"
 
-    p = Path("package.dat")
+    path = Path("package.dat")
 
-    p.touch()
-    p.unlink()
+    path.touch()
+    path.unlink()
 
-    process = V1_Packer
-    chunk_buffer_size = (1024 * 1024) * 2
-    current = Manifest.make(multi_target)
-    PackageMaster.pack(current, chunk_buffer_size, process, "package.dat")
-    sleep(5)
+    buffer_size = (1024 * 1024) * 2
+
+    manifest = ManifestMaker.create(target_folder, buffer_size)
+
+    ManifestMaker.write(manifest, "manifest.ini", buffer_size)
+
+    PackageMaster.pack(manifest, buffer_size, VersionOnePacker, "package.dat")
+
     PackageMaster.unpack("package.dat")
 
 

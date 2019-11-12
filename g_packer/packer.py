@@ -4,6 +4,7 @@ from hashlib import sha256
 import bson
 
 from .static import ALLOWED_CHUNK_SIZES
+from .manifest import FileManifest  # used for typing
 
 
 class Packer:
@@ -21,7 +22,7 @@ class Packer:
     def collect_metadata():
         raise NotImplementedError
 
-    def serialize(data):
+    def serialize():
         raise NotImplementedError
 
     def write():
@@ -31,14 +32,19 @@ class Packer:
 class UnPacker:
     version = None
 
-    def read_metadata(deserialized_chunk):
-        meta_data = {}
-        meta_data["version"] = deserialized_chunk.get("version")
-        meta_data["filename"] = deserialized_chunk.get("filename")
-        meta_data["hash"] = deserialized_chunk.get("hash")
-        meta_data["index"] = deserialized_chunk.get("index")
-        meta_data["seek"] = deserialized_chunk.get("seek")
-        meta_data["compression"] = deserialized_chunk.get("compression")
+    def parse():
+        raise NotImplementedError
+
+    def read_metadata(chunk):
+        # TODO: Maybe more to concrete. gives chance to have differen meta_data parser.
+        meta_data = {
+            "version": chunk["version"],
+            "filename": chunk["filename"],
+            "hash": chunk["hash"],
+            "index": chunk["index"],
+            "seek": chunk["seek"],
+            "compressed": chunk["compressed"],
+        }
         return meta_data
 
     def decompress():
@@ -57,18 +63,22 @@ class UnPacker:
         raise NotImplementedError
 
 
-class V1_Packer(Packer):
+def hash_sha256(file_chunk):
+    hash_algo = sha256()
+    file_hash = hash_algo.update(file_chunk)
+    file_hash = hash_algo.hexdigest()
+
+    first_bytes = file_hash[:4]
+    last_bytes = file_hash[-4:]
+
+    return first_bytes + last_bytes
+
+
+class VersionOnePacker(Packer):
     version = 1
 
     def hash(file_chunk):
-        hash_ = sha256()
-        hash_.update(file_chunk)
-        hex_ = hash_.hexdigest()
-
-        first_hash = hex_[:4]
-        last_hash = hex_[-4:]
-
-        return first_hash + last_hash
+        return hash_sha256(file_chunk)
 
     def compress(file_chunk):
 
@@ -77,19 +87,20 @@ class V1_Packer(Packer):
         # print("using compressed chunk")  # TODO: add else for logging.
 
         compressed_chunk = zlib.compress(file_chunk, level=9)
-        if len(compress_chunk) < len(file_chunk):
-            return compress_chunk, True
+        if len(compressed_chunk) < len(file_chunk):
+            return compressed_chunk, True
         else:
             return file_chunk, False
 
-    def collect_metadata(file_name, chunk_hash, chunk_index, seek, compression_flag):
-        meta_data = dict()
-        meta_data["filename"] = file_name
-        meta_data["hash"] = chunk_hash
-        meta_data["index"] = chunk_index
-        meta_data["seek"] = seek
-        meta_data["compression"] = compression_flag
-        meta_data["version"] = V1_Packer.version
+    def collect_metadata(file_name, chunk_hash, chunk_index, seek, compressed_flag, version):
+        meta_data = {
+            "filename": file_name,
+            "hash": chunk_hash,
+            "index": chunk_index,
+            "seek": seek,
+            "compressed": compressed_flag,
+            "version": version,
+        }
         # print(meta_data)
         return meta_data
 
@@ -102,24 +113,20 @@ class V1_Packer(Packer):
             return write_file.write(serialized_data)
 
 
-class V1_UnPacker(UnPacker):
+class VersionOneUnPacker(UnPacker):
     version = 1
 
-    def decompress(payload):
-        return zlib.decompress(payload)
+    def decompress(payload, compressed_flag):
+        if compressed_flag:
+            return zlib.decompress(payload)
+        else:
+            return payload
 
     def hash(file_chunk):
-        hash_ = sha256()
-        hash_.update(file_chunk)
-        hex_ = hash_.hexdigest()
-
-        first_hash = hex_[:4]
-        last_hash = hex_[-4:]
-
-        return first_hash + last_hash
+        return hash_sha256(file_chunk)
 
     def check_hash(first_hash, second_hash):
-        assert first_hash == second_hash  # TODO: Proper exception
+        assert first_hash == second_hash  # TODO: Proper exception # should return, better naming
 
     def write(deserialized_data, destination):
         # print("writing bytes to file")
@@ -129,81 +136,68 @@ class V1_UnPacker(UnPacker):
 
 
 class PackageMaster:
-    versions = {1: V1_UnPacker}
+    versions = {1: VersionOneUnPacker}
 
     def get_unpacker(version):
         processor = PackageMaster.versions.get(version, None)
         assert processor is not None  # TODO: Add proper error.
         return processor
 
-    def unpack(target_package: str):
+    def unpack(target_package: str):  # TODO: ADD root_destination
         with open(target_package, mode="rb") as read_file:
             for deserialized_data in bson.decode_file_iter(read_file):
-                meta_data = UnPacker.read_metadata(deserialized_data)
+
                 payload = deserialized_data.pop("payload")
+                # IDEA: add a parse(deser_data) -> payload, meta_data, version
+                meta_data = UnPacker.read_metadata(deserialized_data)
                 version = meta_data["version"]
-                processor = PackageMaster.get_unpacker(version)
 
-                # print(meta_data)
-                # print(version)
-                if meta_data["compression"]:  # TODO: Compare compression logic
-                    payload = processor.decompress(payload)
+                un_packer = PackageMaster.get_unpacker(version)
 
-                chunk_hash = processor.hash(payload)
-                #  print(chunk_hash)
-                processor.check_hash(chunk_hash, meta_data["hash"])
+                payload = un_packer.decompress(payload, meta_data["compressed"])
 
-                file_name = meta_data.get("filename")
-                processor.write(payload, file_name)  # TODO: need to add file destination
+                chunk_hash = un_packer.hash(payload)
+
+                un_packer.check_hash(chunk_hash, meta_data["hash"])
+
+                un_packer.write(
+                    payload, meta_data["filename"]
+                )  # TODO: need to add file destination
                 print(".", end="", flush=True)
 
-    def pack(manifest: FileManifest, chunk_len: int, processor: Packer, destination: str):
-
-        assert chunk_len in ALLOWED_CHUNK_SIZES
+    def pack(manifest: FileManifest, chunk_buffer_size: int, processor: Packer, destination: str):
+        assert chunk_buffer_size in ALLOWED_CHUNK_SIZES
 
         manifest.verify()
-        seek = 0  # Shows the beginning position to read the file from.
 
-        for file_ in manifest:
-            filename = str(file_.path)
-            chunks = file_.chunk_len(chunk_len)
+        seek = 0  # Shows the starting location to start read the file from the package.dat.
+
+        for current_file in manifest:
+            file_name = str(current_file.path)
+            chunks = current_file.chunk_len(chunk_buffer_size)
 
             # print("chunks:", chunks)
 
-            with open(file_.path, "rb") as read_file:
+            with open(current_file.path, "rb") as read_file:
                 for chunk_index in range(chunks):
-                    chunk = read_file.read(chunk_len)
+                    chunk = read_file.read(chunk_buffer_size)
 
                     chunk_hash = processor.hash(chunk)
 
                     chunk, compressed_flag = processor.compress(chunk)
 
+                    version = processor.version
+
                     data = processor.collect_metadata(
-                        filename, chunk_hash, chunk_index, seek, compressed_flag
+                        file_name, chunk_hash, chunk_index, seek, compressed_flag, version
                     )
                     data["payload"] = chunk
 
                     serialized_data = processor.serialize(data)
+
                     written_bytes = processor.write(serialized_data, destination)
 
                     seek += written_bytes
                     print(".", end="", flush=True)
 
                     # break  # TODO: DONT FORGET TO REMOVE
-
-
-# def protoype_code():
-# from pathlib import Path
-# from .manifest import FileManifest, Manifest
-#     multi_target = "stuff"
-#     from time import sleep
-#
-#     p = Path("package.dat")
-#     p.unlink()
-#
-#     process = V1_Packer
-#     chunk_size = 1024 * 1024
-#     current = Manifest.make(multi_target)
-#     PackageMaster.pack(current, chunk_size, process, "package.dat")
-#     sleep(5)
-#     PackageMaster.unpack("package.dat")
