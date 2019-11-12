@@ -92,4 +92,8 @@ ENV/
 *.npy
 *.pkl
 
+# project specific
 test_data/
+package.dat
+manifest.ini
+stuff/
