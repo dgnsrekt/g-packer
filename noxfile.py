@@ -14,6 +14,6 @@ def tests(session):
 @nox.session
 def lint(session):
     """Linting using black/flake8"""
-    session.install("flake8", "flake8-import-order", "black")
+    session.install("wemake-python-styleguide", "black")
     session.run("black", "--line-length", "99", "--check", ".")
-    session.run("flake8", "glitter-packer")
+    session.run("flake8", "g_packer")
