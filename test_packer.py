@@ -6,8 +6,8 @@ from g_packer.manifest import FileManifest, ManifestMaker
 
 def protoype_code():
 
-    target_folder = "stuff/movie.mkv"
-    # target_folder = "stuff"
+    # target_folder = "stuff/movie.mkv"
+    target_folder = "stuff"
 
     path = Path("package.dat")
 

@@ -25,7 +25,7 @@ class Packer:
     def serialize():
         raise NotImplementedError
 
-    def write():
+    def write_package():
         raise NotImplementedError
 
 
@@ -107,7 +107,7 @@ class VersionOnePacker(Packer):
     def serialize(data):
         return bson.encode(data)
 
-    def write(serialized_data, destination):
+    def write_package(serialized_data, destination):
         # print("writing bytes to file")
         with open(destination, mode="ab") as write_file:
             return write_file.write(serialized_data)
@@ -150,6 +150,7 @@ class PackageMaster:
                 payload = deserialized_data.pop("payload")
                 # IDEA: add a parse(deser_data) -> payload, meta_data, version
                 meta_data = UnPacker.read_metadata(deserialized_data)
+
                 version = meta_data["version"]
 
                 un_packer = PackageMaster.get_unpacker(version)
@@ -195,7 +196,7 @@ class PackageMaster:
 
                     serialized_data = processor.serialize(data)
 
-                    written_bytes = processor.write(serialized_data, destination)
+                    written_bytes = processor.write_package(serialized_data, destination)
 
                     seek += written_bytes
                     print(".", end="", flush=True)
