@@ -1,11 +1,9 @@
-from hashlib import sha256
-from pathlib import Path
 import zlib
-
-from manifest import Manifest, FileManifest
-from static import ALLOWED_CHUNK_SIZES
+from hashlib import sha256
 
 import bson
+
+from .static import ALLOWED_CHUNK_SIZES
 
 
 class Packer:
@@ -73,7 +71,16 @@ class V1_Packer(Packer):
         return first_hash + last_hash
 
     def compress(file_chunk):
-        return zlib.compress(file_chunk, level=9)
+
+        # compressed chunks < 90 bytes is useless.
+        # save_bytes = len(file_chunk) - len(compressed_chunk)  # noqa
+        # print("using compressed chunk")  # TODO: add else for logging.
+
+        compressed_chunk = zlib.compress(file_chunk, level=9)
+        if len(compress_chunk) < len(file_chunk):
+            return compress_chunk, True
+        else:
+            return file_chunk, False
 
     def collect_metadata(file_name, chunk_hash, chunk_index, seek, compression_flag):
         meta_data = dict()
@@ -165,23 +172,11 @@ class PackageMaster:
 
             with open(file_.path, "rb") as read_file:
                 for chunk_index in range(chunks):
-                    compressed_flag = False
-
                     chunk = read_file.read(chunk_len)
 
                     chunk_hash = processor.hash(chunk)
 
-                    compressed_chunk = processor.compress(chunk)
-
-                    # compressed chunks < 90 bytes is useless.
-                    if len(compressed_chunk) < len(chunk):
-                        save_bytes = len(chunk) - len(compressed_chunk)
-
-                        # print("saved_bytes:", save_bytes)
-                        # print("using compressed chunk")  # TODO: add else for logging.
-
-                        chunk = compressed_chunk
-                        compressed_flag = True
+                    chunk, compressed_flag = processor.compress(chunk)
 
                     data = processor.collect_metadata(
                         filename, chunk_hash, chunk_index, seek, compressed_flag
@@ -197,16 +192,18 @@ class PackageMaster:
                     # break  # TODO: DONT FORGET TO REMOVE
 
 
-def protoype_code():
-    multi_target = "stuff"
-    from time import sleep
-
-    p = Path("package.dat")
-    p.unlink()
-
-    process = V1_Packer
-    chunk_size = 1024 * 1024
-    current = Manifest.make(multi_target)
-    PackageMaster.pack(current, chunk_size, process, "package.dat")
-    sleep(5)
-    PackageMaster.unpack("package.dat")
+# def protoype_code():
+# from pathlib import Path
+# from .manifest import FileManifest, Manifest
+#     multi_target = "stuff"
+#     from time import sleep
+#
+#     p = Path("package.dat")
+#     p.unlink()
+#
+#     process = V1_Packer
+#     chunk_size = 1024 * 1024
+#     current = Manifest.make(multi_target)
+#     PackageMaster.pack(current, chunk_size, process, "package.dat")
+#     sleep(5)
+#     PackageMaster.unpack("package.dat")
