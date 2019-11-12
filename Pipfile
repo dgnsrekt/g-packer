@@ -4,22 +4,20 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-appdirs = "*"
 pymongo = "*"
 logme = "*"
 python-decouple = "*"
 progressbar2 = "*"
-faker = "*"
+Faker = "*"
 toml = "*"
 
 [dev-packages]
 black = "==19.10b0"
 nox = "*"
 pytest = "*"
-flake8 = "*"
 testdata = "*"
 pytest-watch = "*"
-flake8-import-order = "*"
+wemake-python-styleguide = "*"
 
 [requires]
 python_version = "3.7"
