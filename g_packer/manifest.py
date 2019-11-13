@@ -7,7 +7,7 @@ from pathlib import Path
 
 import toml
 
-from .static import KILOBYTE, MEGABYTE
+from .static import KILOBYTE, MEGABYTE, ALLOWED_CHUNK_SIZES
 
 
 class PackagePath:
@@ -42,8 +42,14 @@ class PackagePath:
 
 
 class FileManifest(metaclass=ABCMeta):
+    # Provides basic functionality to build a file manifest.
+
     def __init__(self, target_path: str, chunk_buffer_size: int, *args, **kwargs):
         self.path = PackagePath(target_path)
+
+        if chunk_buffer_size not in ALLOWED_CHUNK_SIZES:
+            raise ValueError("{chunk_buffer_size} is not an allowed buffer size.")
+
         self.chunk_buffer_size = chunk_buffer_size
         self.top_directory = None
 
@@ -54,7 +60,9 @@ class FileManifest(metaclass=ABCMeta):
         self.extras["comment"] = kwargs.get("comment", None)
         self.extras["created_by"] = kwargs.get("created_by", None)
 
-        self.extras = {k: v for k, v in self.extras.items() if v is not None}
+        self.extras = {
+            k: v for k, v in self.extras.items() if v is not None
+        }  # removes none values
 
     def verify(self):
         for file_ in self:
@@ -65,6 +73,8 @@ class FileManifest(metaclass=ABCMeta):
 
 
 class MultipleFileManifest(FileManifest):
+    # Builds file manifest with multiple files.
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
