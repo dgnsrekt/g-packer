@@ -23,7 +23,7 @@ def protoype_code():
 
     PackageMaster.pack(manifest, buffer_size, VersionOnePackageProcessor, "package.dat")
 
-    PackageMaster.unpack("package.dat")
+    PackageMaster.unpack("package.dat", "new_folder")
 
 
 if __name__ == "__main__":

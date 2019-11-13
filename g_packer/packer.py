@@ -1,5 +1,6 @@
 import zlib
 from hashlib import sha256
+from pathlib import Path
 
 import bson
 
@@ -116,11 +117,16 @@ class VersionOnePackageProcessor(BasePacker, BaseUnPacker):
     def check_hash(first_hash, second_hash):  # Comparehash
         assert first_hash == second_hash  # TODO: Proper exception # should return, better naming
 
-    def write(deserialized_data, destination):
-        # print("writing bytes to file")
-        destination += "new"
-        with open(destination, mode="ab") as write_file:
-            return write_file.write(deserialized_data)
+    def write(cleaned_data, filename, root_folder):
+        folder = Path(root_folder)
+        file_path = folder.joinpath(filename)
+        # TODO: Think about passing permissions as metadata
+
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.touch(exist_ok=True)
+
+        with open(file_path, mode="ab") as write_file:
+            return write_file.write(cleaned_data)
 
 
 class PackageMaster:
@@ -136,7 +142,7 @@ class PackageMaster:
         assert processor is not None  # TODO: Add proper error.
         return processor
 
-    def unpack(target_package: str):  # TODO: ADD root_destination
+    def unpack(target_package: str, destination_root_folder: str):  # TODO: ADD root_destination
         with open(target_package, mode="rb") as read_file:
             for deserialized_data in bson.decode_file_iter(read_file):
 
@@ -150,9 +156,7 @@ class PackageMaster:
 
                 processor.check_hash(chunk_hash, meta_data["hash"])
 
-                processor.write(
-                    payload, meta_data["filename"]
-                )  # TODO: need to add file destination
+                processor.write(payload, meta_data["filename"], destination_root_folder)
                 print(".", end="", flush=True)
 
     def pack(
@@ -169,12 +173,6 @@ class PackageMaster:
         seek = 0  # Shows the starting location to start read the file from the package.dat.
 
         for current_file in manifest:
-            if current_file.is_dir():
-
-                print(current_file)
-                print(current_file.name)
-                print(current_file.is_dir())
-                exit()
 
             file_name = str(current_file.path)
             chunks = current_file.chunk_len(chunk_buffer_size)
