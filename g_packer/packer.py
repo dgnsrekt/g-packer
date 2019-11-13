@@ -32,11 +32,11 @@ class Packer:
 class UnPacker:
     version = None
 
-    def parse():
+    def split():
         raise NotImplementedError
 
-    def read_metadata(chunk):
-        # TODO: Maybe more to concrete. gives chance to have differen meta_data parser.
+    def parse_metadata(chunk):
+        # TODO: Maybe move to concrete. gives chance to have differen meta_data parser.
         meta_data = {
             "version": chunk["version"],
             "filename": chunk["filename"],
@@ -148,8 +148,8 @@ class PackageMaster:
             for deserialized_data in bson.decode_file_iter(read_file):
 
                 payload = deserialized_data.pop("payload")
-                # IDEA: add a parse(deser_data) -> payload, meta_data, version
-                meta_data = UnPacker.read_metadata(deserialized_data)
+                # IDEA: add a split(deser_data) -> payload, meta_data, version
+                meta_data = UnPacker.parse_metadata(deserialized_data)
 
                 version = meta_data["version"]
 
@@ -167,6 +167,10 @@ class PackageMaster:
                 print(".", end="", flush=True)
 
     def pack(manifest: FileManifest, chunk_buffer_size: int, processor: Packer, destination: str):
+
+        assert issubclass(
+            processor, Packer
+        ), "This is not a Package Processor"  # TODO if , raise error
         assert chunk_buffer_size in ALLOWED_CHUNK_SIZES
 
         manifest.verify()
