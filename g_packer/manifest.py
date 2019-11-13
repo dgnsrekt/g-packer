@@ -40,6 +40,12 @@ class PackagePath:
     def __str__(self):
         return self.name
 
+    def is_dir(self):
+        return self.path.is_dir()
+
+    def is_file(self):
+        return self.path.is_file()
+
 
 class FileManifest(metaclass=ABCMeta):
     # Provides basic functionality to build a file manifest.

@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from g_packer.packer import PackageMaster, VersionOnePacker
-from g_packer.manifest import FileManifest, ManifestMaker
+from g_packer.packer import PackageMaster, VersionOnePackageProcessor
+from g_packer.manifest import ManifestMaker
+from g_packer.manifest import FileManifest, MultipleFileManifest
 
 
 def protoype_code():
@@ -20,7 +21,7 @@ def protoype_code():
 
     ManifestMaker.write(manifest, "manifest.ini", buffer_size)
 
-    PackageMaster.pack(manifest, buffer_size, VersionOnePacker, "package.dat")
+    PackageMaster.pack(manifest, buffer_size, VersionOnePackageProcessor, "package.dat")
 
     PackageMaster.unpack("package.dat")
 
