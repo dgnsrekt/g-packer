@@ -6,8 +6,8 @@ from g_packer.static import MEGABYTE
 
 def main():
 
-    target_pack_folder = "apollo"  # FOLDER TO PACK make sure folder or file exists.
-    target_unpack_folder = "apollo_new"
+    target_pack_folder = "stuff"  # FOLDER TO PACK make sure folder or file exists.
+    target_unpack_folder = "stuff_new"
 
     target_manifest_location = "manifest.ini"
     target_package_dat_location = "package.dat"
