@@ -5,7 +5,7 @@ from g_packer.manifest import FileManifest, MultipleFileManifest
 
 def main():
 
-    target_folder = "stuff"  # FOLDER TO PACK
+    target_folder = "stuff"  # FOLDER TO PACK make sure folder or file exists.
 
     buffer_size = (1024 * 1024) * 2
 
