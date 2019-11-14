@@ -3,6 +3,7 @@
 Idea for the bitglitter replacement filepacker.
 
 ## Requires 
+* python3.7
 * pipenv
 
 ## Start dev environment.
