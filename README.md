@@ -2,6 +2,9 @@
 
 Idea for the bitglitter replacement filepacker.
 
+## Requires 
+* pipenv
+
 ## Start dev environment.
 
 ```
