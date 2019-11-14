@@ -11,10 +11,15 @@ from .static import KILOBYTE, MEGABYTE, ALLOWED_CHUNK_SIZES
 
 
 class PackagePath:
+    """PackagePath acts like a path with added extra functionality."""
+
     def __init__(self, path: str):
         self.path = Path(path)
 
     def sha256sum(self) -> str:
+        """
+        :return: sha256 sum of the self.path
+        """
         hash_algo = sha256()
         buffer = bytearray(128 * KILOBYTE)
         buffer = memoryview(buffer)
@@ -25,13 +30,16 @@ class PackagePath:
         return hash_algo.hexdigest()
 
     def exists(self):
+        """Checks if the file at self.path exists."""
         return self.path.exists()
 
     def chunk_len(self, chunk_buffer_size: int):
+        """Returns the amount of chunks a file would divide into."""
         return ceil(len(self) / chunk_buffer_size)
 
     @property
     def name(self):
+        """Returns the name of the file."""
         return str(self.path.name)
 
     def __len__(self):
@@ -41,17 +49,19 @@ class PackagePath:
         return self.name
 
     def is_dir(self):
+        """Returns True if the path is a directory."""
         return self.path.is_dir()
 
     def is_file(self):
+        """Returns True if the path is a file."""
         return self.path.is_file()
 
 
 class FileManifest(metaclass=ABCMeta):
-    # Provides basic functionality to build a file manifest.
+    """Provides the functionality needed to build a file manifest."""
 
     def __init__(self, target_path: str, chunk_buffer_size: int, *args, **kwargs):
-        self.path = PackagePath(target_path)
+        self.package_path = PackagePath(target_path)
 
         if chunk_buffer_size not in ALLOWED_CHUNK_SIZES:
             raise ValueError("{chunk_buffer_size} is not an allowed buffer size.")
@@ -71,6 +81,7 @@ class FileManifest(metaclass=ABCMeta):
         }  # removes none values
 
     def verify(self):
+        """Verify all files in the manifest exist"""
         for file_ in self:
             assert file_.exists()  # TODO: Change to if execption
 
@@ -79,17 +90,18 @@ class FileManifest(metaclass=ABCMeta):
 
 
 class MultipleFileManifest(FileManifest):
-    # Builds file manifest with multiple files.
+    """Extends FileManifest addes functionality for multiple files."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.path_list = self.get_paths()
-        self.top_directory = self.path.name
+        self.top_directory = self.package_path.name
 
     def get_paths(self):
+        """Returns a list of all the files."""
         paths_list = []
-        for directory, _, files in walk(self.path.path):
+        for directory, _, files in walk(self.package_path.path):
             for file_ in files:
                 current_path = PackagePath(f"{directory}/{file_}")
                 assert current_path.exists()  # TODO: Change to if exeption
@@ -108,19 +120,24 @@ class MultipleFileManifest(FileManifest):
 
 
 class SingleFileManifest(FileManifest):
+    """Extends FileManifest addes functionality for single file."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     @property
     def name(self):
-        return str(self.path)
+        return str(self.package_path)
 
     def __iter__(self):
-        return iter([self.path])
+        return iter([self.package_path])
 
 
 class ManifestMaker:
+    """Factory class which builds FileManifest Objects."""
+
     def create(target_path: str, chunk_buffer_size: int, *args, **kwargs):
+        """Creates the proper manifest based on the target_path."""
         path = Path(target_path)
 
         assert path.exists()  # TODO: Change if exception
@@ -132,12 +149,12 @@ class ManifestMaker:
             return SingleFileManifest(target_path, chunk_buffer_size, *args, **kwargs)
 
     def write(manifest: FileManifest, destination: str, chunk_buffer_size: int):
+        """Writes the contents of the FileManifest to a destination path."""
 
         manifest.verify()
 
         header = dict()
         file_list = []
-
         master_hash = ""
 
         header.update(manifest.extras)
@@ -179,6 +196,7 @@ class ManifestMaker:
                 destination_file.write("\n")
 
 
+### DELETE: All below prototype code ----V
 def manny():
     manifest = Manifest.make("logme.ini", comment="hello from earth")
     for x in manifest:
