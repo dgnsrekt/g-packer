@@ -135,7 +135,8 @@ class VersionOnePackageProcessor(BasePacker, BaseUnPacker):
     def write(cleaned_data, filename, root_folder):
 
         folder = Path(root_folder)
-        file_path = folder.joinpath(filename)
+
+        file_path = Path(f"{folder}{filename}")
         # TODO: Think about passing permissions as metadata
 
         file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -194,8 +195,11 @@ class PackageMaster:
 
         for current_file in manifest:
 
-            file_name = str(current_file.path)
+            # file_name = str(current_file.path)
+
             chunks = current_file.chunk_len(chunk_buffer_size)
+
+            file_name = str(current_file.path).split(f"{manifest.top_directory}")[-1]
 
             with open(current_file.path, "rb") as read_file:
                 for index in range(chunks):
