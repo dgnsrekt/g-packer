@@ -1,13 +1,14 @@
 from g_packer.packer import PackageMaster, VersionOnePackageProcessor
 from g_packer.manifest import ManifestMaker
 from g_packer.manifest import FileManifest, MultipleFileManifest
+from g_packer.static import MEGABYTE
 
 
 def main():
 
     target_folder = "stuff"  # FOLDER TO PACK make sure folder or file exists.
 
-    buffer_size = (1024 * 1024) * 2
+    buffer_size = MEGABYTE * 2
 
     manifest = ManifestMaker.create(target_folder, buffer_size)  # createst a manifest object
 
