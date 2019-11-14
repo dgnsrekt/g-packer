@@ -6,8 +6,8 @@ from g_packer.static import MEGABYTE
 
 def main():
 
-    target_pack_folder = "stuff"  # FOLDER TO PACK make sure folder or file exists.
-    target_unpack_folder = "new_folder"
+    target_pack_folder = "apollo"  # FOLDER TO PACK make sure folder or file exists.
+    target_unpack_folder = "apollo_new"
 
     target_manifest_location = "manifest.ini"
     target_package_dat_location = "package.dat"
@@ -23,9 +23,8 @@ def main():
     PackageMaster.pack(
         manifest, buffer_size, VersionOnePackageProcessor, target_package_dat_location
     )
-    # ^--- reads then serializes each file in the manifest by BUFFER_SIZE chunks.
-    # Uses the VersionOnePackageProcessor to read and serailize each file in the manifest
-    # file by BUFFER_SIZE chunks then writes to the data to a package.dat file.
+    # ^--- Uses the VersionOnePackageProcessor to read and serialize each file in the manifest
+    # file by BUFFER_SIZE'd chunks then writes the data to a package.dat file.
     # PackageProcessor takes care of compress -> metadata collection -> serialization -> writing package.dat
     # The packageProcessor can easily be upgraded to encrypt each chunk prior to compress/ serialization.
 
