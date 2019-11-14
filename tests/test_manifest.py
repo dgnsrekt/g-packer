@@ -118,8 +118,11 @@ def test_file_manifesf_with_extras(file_manifest_with_extras):
     date = manifest.extras["creation_date"]
     date = datetime.fromisoformat(date)
 
+    extras = list(manifest.extras.keys())
+    expected_extras = ["creation_date", "comment", "created_by"]
+
     assert type(date) == datetime
 
-    assert len(manifest.extras.keys()) == 3
+    assert len(extras) == 3
 
-    assert set(manifest.extras.keys()) == set(["creation_date", "comment", "created_by"])
+    assert set(extras) == set(expected_extras)
