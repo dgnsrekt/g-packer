@@ -194,35 +194,3 @@ class ManifestMaker:
 
                 destination_file.write(data)
                 destination_file.write("\n")
-
-
-### DELETE: All below prototype code ----V
-def manny():
-    manifest = Manifest.make("logme.ini", comment="hello from earth")
-    for x in manifest:
-        assert x.exists()
-        print(x)
-        print(x.path)
-
-    # Manifest.create(manifest, "manifest.init")
-
-    manifest = Manifest.make("stuff", created_by="kevin")
-    for x in manifest:
-        assert x.exists()
-        print(x)
-        print(x.path)
-
-    # Manifest.create(manifest, "manifest_single")
-
-
-def main():
-    y = Path("logme.ini")
-    x = PackagePath("logme.ini")
-
-    print(y)
-    print(y.name)
-
-    print(x)
-    print(x.sha256sum())
-    print(len(x))
-    print(x.chunks_length(chunk_size=MEGABYTE))
