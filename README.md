@@ -33,7 +33,7 @@ After starting the dev environment run.
 In the example.py change target_pack_folder to the 
 location you would like to pack.
 
-$ python example.py
+$ python3 example.py
 ```
 
 ## Example of manifest.ini contents
