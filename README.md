@@ -1,27 +1,27 @@
 # g-packer
 
-Idea for the bitglitter filepacker.
+Idea for the bitglitter replacement filepacker.
 
-##Start dev environment.
+## Start dev environment.
 
 ```
 $ pipenv sync --dev
 $ pipenv shell
 ```
 
-##Run test
+## Run test
 After starting the dev environment run.
 ```
 $ pytest
 ```
 
-##Run test from nox
+## Run test from nox
 After starting the dev environment run.
 ```
 $ nox -s tests
 ```
 
-##Run Example
+## Run Example
 After starting the dev environment run.
 ```
 In the example.py change target_pack_folder to the 
