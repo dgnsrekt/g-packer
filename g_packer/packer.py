@@ -56,7 +56,7 @@ class VersionOnePackageProcessor(BasePacker, BaseUnPacker):
     """
     Version 1 Package Processor
     Extends from the Packer/Unpacker base classes and provides functions
-    needed to encrypt, compress, serailize, deserialize pack and unpack 
+    needed to encrypt, compress, serailize, deserialize pack and unpack
     multiple files into a single package.dat file.
     """
 
@@ -194,8 +194,6 @@ class PackageMaster:
         seek = 0  # For recording the start location of each file.
 
         for current_file in manifest:
-
-            # file_name = str(current_file.path)
 
             chunks = current_file.chunk_len(chunk_buffer_size)
 
