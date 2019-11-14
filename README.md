@@ -5,6 +5,8 @@ Idea for the bitglitter replacement filepacker.
 ## Start dev environment.
 
 ```
+$ git clone git@github.com:dgnsrekt/g-packer.git
+$ cd g-packer
 $ pipenv sync --dev
 $ pipenv shell
 ```
