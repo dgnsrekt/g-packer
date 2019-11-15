@@ -11,15 +11,13 @@ from .static import KILOBYTE, MEGABYTE, ALLOWED_CHUNK_SIZES
 
 
 class PackagePath:
-    """PackagePath acts like a path with added extra functionality."""
+    """ Extends pathlib.Path adding some commonly used utility methods."""
 
     def __init__(self, path: str):
         self.path = Path(path)
 
     def sha256sum(self) -> str:
-        """
-        :return: sha256 sum of the self.path
-        """
+        """SHA256 Checksum of the file at self.path."""
         hash_algo = sha256()
         buffer = bytearray(128 * KILOBYTE)
         buffer = memoryview(buffer)
@@ -33,8 +31,9 @@ class PackagePath:
         """Checks if the file at self.path exists."""
         return self.path.exists()
 
-    def chunk_len(self, chunk_buffer_size: int):
-        """Returns the amount of chunks a file would divide into."""
+    def chunk_len(self, chunk_buffer_size: int):  # TODO: rename count_chunks
+        """Counts the amount of buffer_size chunks a file can be divided by."""
+
         return ceil(len(self) / chunk_buffer_size)
 
     @property
@@ -49,16 +48,16 @@ class PackagePath:
         return self.name
 
     def is_dir(self):
-        """Returns True if the path is a directory."""
+        """Returns True if the path leads to a directory."""
         return self.path.is_dir()
 
     def is_file(self):
-        """Returns True if the path is a file."""
+        """Returns True if the path leads to a file."""
         return self.path.is_file()
 
 
 class FileManifest(metaclass=ABCMeta):
-    """Provides the functionality needed to build a file manifest."""
+    """Provides basic functionality needed to build a file manifest."""
 
     def __init__(self, target_path: str, chunk_buffer_size: int, *args, **kwargs):
         self.package_path = PackagePath(target_path)
@@ -81,7 +80,7 @@ class FileManifest(metaclass=ABCMeta):
         }  # removes none values
 
     def verify(self):
-        """Verify all files in the manifest exist"""
+        """Verifies all files in the manifest exist."""
         for file_ in self:
             assert file_.exists()  # TODO: Change to if execption
 
@@ -90,7 +89,7 @@ class FileManifest(metaclass=ABCMeta):
 
 
 class MultipleFileManifest(FileManifest):
-    """Extends FileManifest addes functionality for multiple files."""
+    """Extends FileManifest provides multi-file functionality."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -113,14 +112,14 @@ class MultipleFileManifest(FileManifest):
 
 
 # IDEA Custom Multi File Manifest Class
-# Initailly builds a customily named top directory and makes it.
-# Then it finds all choosen files and creates symlinks to the choosen files in the
-# custom named directory.
+# Initailly makes a custom named top directory.
+# Next, it finds the absolute path to all the choosen files and creates symlinks
+# to the files in the custom top directory.
 # uses os.walk followlinks=True options to walk symbolic links that resolve to dirs.
 
 
 class SingleFileManifest(FileManifest):
-    """Extends FileManifest addes functionality for single file."""
+    """Extends FileManifest provides single file functionality."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -134,10 +133,10 @@ class SingleFileManifest(FileManifest):
 
 
 class ManifestMaker:
-    """Factory class which builds FileManifest Objects."""
+    """Factory class provides functions to build a manifest."""
 
     def create(target_path: str, chunk_buffer_size: int, *args, **kwargs):
-        """Creates the proper manifest based on the target_path."""
+        """Creates the a manifest of files from the target_path."""
         path = Path(target_path)
 
         assert path.exists()  # TODO: Change if exception
@@ -149,7 +148,7 @@ class ManifestMaker:
             return SingleFileManifest(target_path, chunk_buffer_size, *args, **kwargs)
 
     def write(manifest: FileManifest, destination: str, chunk_buffer_size: int):
-        """Writes the contents of the FileManifest to a destination path."""
+        """Writes the a manifest of files to the destination."""
 
         manifest.verify()
 

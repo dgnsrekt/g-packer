@@ -33,7 +33,7 @@ After starting the dev environment run.
 In the example.py change target_pack_folder to the 
 location you would like to pack.
 
-$ python example.py
+$ python3 example.py
 ```
 
 ## Example of manifest.ini contents
@@ -54,3 +54,7 @@ path = "stuff/movie.mp4"
 hash = "a90185d8e8923bc259a3944f4684e40e53af44b9c1160c37ca28ea6cce22c074"
 chunks = 763
 ```
+
+## TODO
+* Add setup.py
+* Add cli
