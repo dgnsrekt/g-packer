@@ -201,7 +201,7 @@ class PackageMaster:
             file_name = str(current_file.path).split(f"{manifest.top_directory}")[-1]
 
             with open(current_file.path, "rb") as read_file:
-                for index in range(chunks):
+                for index, chunk_index in enumerate(range(chunks, 0, -1)):
 
                     if index < 1:
                         seek = cursor
@@ -213,7 +213,7 @@ class PackageMaster:
                     chunk, compressed_flag = processor.compress(chunk)
 
                     data = processor.collect_metadata(
-                        file_name, chunk_hash, index, seek, compressed_flag
+                        file_name, chunk_hash, chunk_index, seek, compressed_flag
                     )
                     data["payload"] = chunk
 

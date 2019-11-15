@@ -42,9 +42,7 @@ def test_pack_and_unpack(fake_test_dirs):
 
     manifest = ManifestMaker.create(pre_data_dir, buffer_size)
 
-    PackageMaster.pack(
-        manifest, buffer_size, VersionOnePackageProcessor, str(package_dat)
-    )
+    PackageMaster.pack(manifest, buffer_size, VersionOnePackageProcessor, str(package_dat))
 
     assert package_dat.exists()
 
