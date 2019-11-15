@@ -14,7 +14,9 @@ def main():
 
     buffer_size = MEGABYTE * 2
 
-    manifest = ManifestMaker.create(target_pack_folder, buffer_size)  # createst a manifest object
+    manifest = ManifestMaker.create(
+        target_pack_folder, buffer_size
+    )  # createst a manifest object
 
     ManifestMaker.write(
         manifest, target_manifest_location, buffer_size

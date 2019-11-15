@@ -180,7 +180,7 @@ class PackageMaster:
                 print(".", end="", flush=True)
 
     def pack(
-        manifest: FileManifest, chunk_buffer_size: int, processor: BasePacker, destination: str
+        manifest: FileManifest, chunk_buffer_size: int, processor: BasePacker, destination: str,
     ):
         """Process and Packs all manifested files into a package.dat file."""
 
@@ -192,6 +192,7 @@ class PackageMaster:
         manifest.verify()
 
         seek = 0  # For recording the start location of each file.
+        cursor = 0
 
         for current_file in manifest:
 
@@ -201,6 +202,10 @@ class PackageMaster:
 
             with open(current_file.path, "rb") as read_file:
                 for index in range(chunks):
+
+                    if index < 1:
+                        seek = cursor
+
                     chunk = read_file.read(chunk_buffer_size)
 
                     chunk_hash = processor.hash(chunk)
@@ -216,5 +221,6 @@ class PackageMaster:
 
                     written_bytes = processor.write_package(serialized_data, destination)
 
-                    seek += written_bytes
+                    cursor += written_bytes
+
                     print(".", end="", flush=True)
