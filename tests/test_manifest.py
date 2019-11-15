@@ -1,4 +1,9 @@
-from g_packer.manifest import PackagePath, FileManifest, MultipleFileManifest, SingleFileManifest
+from g_packer.manifest import (
+    PackagePath,
+    FileManifest,
+    MultipleFileManifest,
+    SingleFileManifest,
+)
 from os import getrandom
 from pathlib import Path
 from faker import Faker
