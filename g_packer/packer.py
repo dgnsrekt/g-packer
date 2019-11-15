@@ -201,7 +201,7 @@ class PackageMaster:
             file_name = str(current_file.path).split(f"{manifest.top_directory}")[-1]
 
             with open(current_file.path, "rb") as read_file:
-                for index, chunk_index in enumerate(range(chunks, 0, -1)):
+                for index, chunk_index in enumerate(list(reversed(range(chunks)))):
 
                     if index < 1:
                         seek = cursor
