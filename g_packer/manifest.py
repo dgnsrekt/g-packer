@@ -27,17 +27,17 @@ class PackagePath:
                 hash_algo.update(buffer[:chunk])
         return hash_algo.hexdigest()
 
-    def exists(self):
+    def exists(self) -> bool:
         """Checks if the file at self.path exists."""
         return self.path.exists()
 
-    def chunk_len(self, chunk_buffer_size: int):  # TODO: rename count_chunks
+    def chunk_len(self, chunk_buffer_size: int) -> int:  # TODO: rename count_chunks
         """Counts the amount of buffer_size chunks a file can be divided by."""
 
         return ceil(len(self) / chunk_buffer_size)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Returns the name of the file."""
         return str(self.path.name)
 
@@ -47,11 +47,11 @@ class PackagePath:
     def __str__(self):
         return self.name
 
-    def is_dir(self):
+    def is_dir(self) -> bool:
         """Returns True if the path leads to a directory."""
         return self.path.is_dir()
 
-    def is_file(self):
+    def is_file(self) -> bool:
         """Returns True if the path leads to a file."""
         return self.path.is_file()
 
@@ -136,7 +136,7 @@ class ManifestMaker:
     """Factory class provides functions to build a manifest."""
 
     def create(target_path: str, chunk_buffer_size: int, *args, **kwargs):
-        """Creates the a manifest of files from the target_path."""
+        """Creates file manifest from the target_path."""
         path = Path(target_path)
 
         assert path.exists()  # TODO: Change if exception
@@ -148,7 +148,7 @@ class ManifestMaker:
             return SingleFileManifest(target_path, chunk_buffer_size, *args, **kwargs)
 
     def write(manifest: FileManifest, destination: str, chunk_buffer_size: int):
-        """Writes the a manifest of files to the destination."""
+        """Writes file manifest of files to the destination."""
 
         manifest.verify()
 
